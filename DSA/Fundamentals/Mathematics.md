@@ -1,4 +1,4 @@
-# Module 0: Algorithm Analysis
+# Algorithm Analysis
 
 ## Introduction
 
