@@ -1,136 +1,176 @@
-# Matrix (2D Arrays Basics)
+# Module 14: Matrix (2D Arrays)
 
 ## Definition
 
-A **Matrix** is a **2D array** arranged in rows and columns. It is used to store data in tabular form.
-
-A matrix element is accessed using two indices:
+A **Matrix (2D Array)** is a data structure that stores elements in a grid of rows and columns. Each element is accessed using two indices:
 
 * Row index
 * Column index
 
+It is widely used in problems involving grids, graphs, images, and dynamic programming.
+
+---
+
+# 1. Matrix Traversal
+
+Visiting every element of the matrix exactly once using nested loops.
+
+### Idea:
+
+Use two loops:
+
+* Outer loop → rows
+* Inner loop → columns
+
+### Time Complexity:
+
+O(m × n)
+
+---
+
+# 2. Row-wise Traversal
+
+Traverse each row from left to right.
+
 Example:
 
-```text id="m1"
-[ [1, 2, 3],
-  [4, 5, 6],
-  [7, 8, 9] ]
+```text id="r1"
+1 2 3
+4 5 6
+```
+
+Output:
+
+```text id="r2"
+1 2 3 4 5 6
+```
+
+### Idea:
+
+Fix row, move column.
+
+---
+
+# 3. Column-wise Traversal
+
+Traverse each column from top to bottom.
+
+Output:
+
+```text id="c1"
+1 4 2 5 3 6
+```
+
+### Idea:
+
+Fix column, move row.
+
+---
+
+# 4. Diagonal Traversal
+
+Traverse elements along diagonals of the matrix.
+
+Used in:
+
+* Matrix pattern problems
+* DP optimizations
+
+### Types:
+
+* Primary diagonal (top-left to bottom-right)
+* Secondary diagonal (top-right to bottom-left)
+
+---
+
+# 5. Spiral Traversal
+
+Traverse matrix in spiral order:
+
+Order:
+Right → Down → Left → Up (repeat)
+
+### Example:
+
+```text id="s1"
+1  2  3
+4  5  6
+7  8  9
+```
+
+Output:
+
+```text id="s2"
+1 2 3 6 9 8 7 4 5
 ```
 
 ---
 
-# Representation
+# 6. Wave Traversal
 
-A matrix of size `m × n` means:
+Traverse columns in alternating direction:
 
-* m rows
-* n columns
+* Column 0 → top to bottom
+* Column 1 → bottom to top
+* Column 2 → top to bottom
 
-Example:
+### Idea:
 
-```text id="m2"
-3 × 3 matrix
-```
-
----
-
-# Types of Matrix
-
-## 1. Row Matrix
-
-Only one row.
-
-## 2. Column Matrix
-
-Only one column.
-
-## 3. Square Matrix
-
-Same number of rows and columns.
-
-## 4. Diagonal Matrix
-
-Non-diagonal elements are 0.
-
-## 5. Identity Matrix
-
-Diagonal elements are 1.
+Alternate direction per column.
 
 ---
 
-# Basic Operations on Matrix
+# 7. Matrix Rotation
 
-## 1. Traversal
+Rotate matrix by 90°, 180°, or 270°.
 
-Visiting each element using nested loops.
+### 90° Clockwise Rotation Steps:
 
-Time Complexity:
+1. Transpose matrix
+2. Reverse each row
+
+### Time Complexity:
+
+O(m × n)
+
+---
+
+# 8. Matrix Transpose
+
+Transpose means swapping rows and columns.
+
+Formula:
 
 ```text id="t1"
-O(m × n)
+A[i][j] → A[j][i]
 ```
 
----
-
-## 2. Addition
-
-Add corresponding elements of two matrices.
-
-Condition:
-Same dimensions required.
-
-Time Complexity:
+### Example:
 
 ```text id="t2"
-O(m × n)
+1 2 3      1 4 7
+4 5 6  →   2 5 8
+7 8 9      3 6 9
 ```
+
+### Time Complexity:
+
+O(m × n)
 
 ---
 
-## 3. Subtraction
+# Complexity Summary
 
-Same as addition but subtract elements.
-
-Time Complexity:
-
-```text id="t3"
-O(m × n)
-```
-
----
-
-## 4. Multiplication
-
-Multiply rows of first matrix with columns of second matrix.
-
-Condition:
-Columns of first = Rows of second
-
-Time Complexity:
-
-```text id="t4"
-O(n³) (basic approach)
-```
-
----
-
-## 5. Transpose
-
-Swap rows and columns.
-
-Example:
-
-```text id="m3"
-[1 2 3]      [1 4 7]
-[4 5 6]  →   [2 5 8]
-[7 8 9]      [3 6 9]
-```
-
-Time Complexity:
-
-```text id="t5"
-O(m × n)
-```
+| Operation             | Time Complexity |
+| --------------------- | --------------- |
+| Matrix Traversal      | O(m × n)        |
+| Row-wise Traversal    | O(m × n)        |
+| Column-wise Traversal | O(m × n)        |
+| Diagonal Traversal    | O(m × n)        |
+| Spiral Traversal      | O(m × n)        |
+| Wave Traversal        | O(m × n)        |
+| Transpose             | O(m × n)        |
+| Rotation              | O(m × n)        |
 
 ---
 
@@ -139,7 +179,8 @@ O(m × n)
 Matrix problems are solved using:
 
 * Nested loops
-* Row-wise or column-wise traversal
+* Direction control (right, left, up, down)
+* Boundary management
 * Index manipulation
 
 ---
@@ -147,40 +188,27 @@ Matrix problems are solved using:
 # Applications
 
 * Image processing
-* Graph representation (adjacency matrix)
-* Dynamic programming (grid problems)
-* Machine learning datasets
 * Game boards (chess, sudoku)
+* Graph representation (adjacency matrix)
+* Dynamic programming grids
+* Pathfinding problems
 
 ---
 
 # Advantages
 
-* Easy representation of structured data
-* Efficient for grid-based problems
-* Supports mathematical operations
-* Used in real-world systems
+* Simple structure for grid-based problems
+* Efficient for structured data
+* Direct indexing access
+* Used in many real-world applications
 
 ---
 
 # Limitations
 
-* High space usage for sparse data
-* Complex multiplication logic
-* Fixed-size structure in static arrays
-* Inefficient for large sparse matrices
-
----
-
-# Complexity Analysis
-
-| Operation      | Time Complexity |
-| -------------- | --------------- |
-| Traversal      | O(m × n)        |
-| Addition       | O(m × n)        |
-| Subtraction    | O(m × n)        |
-| Multiplication | O(n³)           |
-| Transpose      | O(m × n)        |
+* High memory usage for large matrices
+* Complex traversal logic (spiral, diagonal)
+* Inefficient for sparse data
 
 ---
 
@@ -189,76 +217,67 @@ Matrix problems are solved using:
 ## 1. What is a matrix?
 
 **Answer:**
-A matrix is a 2D array arranged in rows and columns used to store data in tabular form.
+A matrix is a 2D array arranged in rows and columns where each element is accessed using two indices.
 
 ---
 
-## 2. How do you access elements in a matrix?
+## 2. What is matrix traversal?
 
 **Answer:**
-Using row and column indices:
-
-```text
-matrix[i][j]
-```
+Matrix traversal is visiting every element of the matrix using nested loops.
 
 ---
 
-## 3. What is the time complexity of matrix traversal?
+## 3. What is row-wise traversal?
 
 **Answer:**
-O(m × n), where m is rows and n is columns.
+Traversing a matrix row by row from left to right.
 
 ---
 
-## 4. What is a square matrix?
+## 4. What is column-wise traversal?
 
 **Answer:**
-A matrix with equal number of rows and columns.
+Traversing a matrix column by column from top to bottom.
 
 ---
 
-## 5. What is transpose of a matrix?
+## 5. What is spiral traversal?
+
+**Answer:**
+Traversal of a matrix in spiral order starting from the outer layer moving inward.
+
+---
+
+## 6. How do you rotate a matrix by 90°?
+
+**Answer:**
+First transpose the matrix, then reverse each row.
+
+---
+
+## 7. What is transpose of a matrix?
 
 **Answer:**
 Swapping rows and columns of a matrix.
 
 ---
 
-## 6. What is the condition for matrix multiplication?
+## 8. What is the time complexity of matrix operations?
 
 **Answer:**
-Number of columns in first matrix must equal number of rows in second matrix.
+Most matrix operations take **O(m × n)** time.
 
 ---
 
-## 7. Why is matrix multiplication O(n³)?
+## 9. What is wave traversal?
 
 **Answer:**
-Because each element requires nested iteration over rows and columns.
+Traversing matrix columns in alternating directions (top-down, bottom-up).
 
 ---
 
-## 8. Where are matrices used?
+## 10. Where are matrix problems used?
 
 **Answer:**
-
-* Graphics
-* AI/ML
-* Graphs
-* Games
-* Grid-based problems
-
----
-
-## 9. What is identity matrix?
-
-**Answer:**
-A square matrix with 1s on diagonal and 0s elsewhere.
-
----
-
-## 10. What is diagonal matrix?
-
-**Answer:**
-A matrix where all non-diagonal elements are 0.
+They are used in graphics, DP, games, image processing, and grid-based problems.
