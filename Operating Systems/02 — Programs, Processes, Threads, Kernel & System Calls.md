@@ -57,6 +57,9 @@
 
 ### 3.3 Shell
 - A **shell** (aka command interpreter) is the part of the OS that receives commands from users and gets them executed.
+- The two primary types of shells are:
+- Command Line Interface (CLI): Text-based interfaces where users type commands (e.g., Bash, Zsh, or Windows PowerShell).
+- Graphical User Interface (GUI): Visual interfaces that allow users to interact with the system using windows, icons, and menus (like the Windows desktop or macOS Finder)
 
 ### 3.4 Functions of the Kernel
 
@@ -71,9 +74,9 @@
 
 | Term | Meaning | Example |
 |---|---|---|
-| **Spooling** | Coordinating jobs between two devices working at **differing speeds** | Print spooling, mail spooling |
-| **Buffering** | Data copy **within one job** to smooth out speed mismatches | YouTube video buffering |
-| **Caching** | Storing frequently-used data for faster future access | Memory caching, Web caching |
+| **Spooling** |  Queues multiple jobs on a hard disk for slow devices (like printers) so processes don't wait. Multiple jobs are placed in a queue on the disk. As the device finishes one job, the spooler automatically feeds the next one from the disk.| Print spooling, mail spooling |
+| **Buffering** | Temporarily holds data in main memory (RAM) to smooth out speed differences between a sender and receiver. A temporary memory space (usually in RAM) holds incoming data until the receiving device or process is ready to process it. | YouTube video buffering |
+| **Caching** | Stores a duplicate of frequently accessed data in a high-speed memory layer (like CPU cache) for faster future retrieval. The cache keeps a copy of data that is originally stored elsewhere (like a slower hard drive). When the CPU needs data, it checks the cache first; if it's there (a "cache hit"), it gets it instantly. | Memory caching, Web caching |
 
 ---
 
