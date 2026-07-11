@@ -1,0 +1,147 @@
+# LEC-19: Database Scaling Patterns
+
+*(Step-by-step scaling — a case study)*
+
+## What Will You Learn?
+- Step-by-step manner, when to choose which scaling option.
+- Which scaling option is feasible **practically** at the moment (i.e., scale incrementally, don't over-engineer upfront).
+
+## A Case Study: Cab Booking App
+
+**Starting point:**
+- Tiny startup.
+- ~10 customers onboard.
+- A **single small-machine DB** stores all customers, trips, locations, booking data, and customer trip history.
+- ~1 trip booking every 5 minutes.
+
+## Your App Becoming Famous, But… (The Problem Begins)
+- Requests scale up to **30 bookings per minute**.
+- The tiny DB system has started **performing poorly**.
+- **API latency** has increased a lot.
+- Transactions facing **Deadlock, Starvation, and frequent failure**.
+- **Sluggish** app experience.
+- **Customer dis-satisfaction.**
+
+## Is There Any Solution?
+- We have to apply some kind of **performance optimisation** measures.
+- We might have to **scale** our system going forward.
+
+---
+
+## Pattern 1 — Query Optimisation & Connection Pool Implementation
+- **Cache** frequently used non-dynamic data, like booking history, payment history, user profiles, etc.
+- Introduce **Database Redundancy** (or maybe use NoSQL).
+- Use **connection pool libraries** to **cache DB connections**.
+- Multiple application threads can use the **same DB connection**.
+- **Good optimisation** as of now.
+- **Result:** Scaled the business to one more city, and now getting ~**100 bookings per minute**.
+
+> **Extra:** A connection pool avoids the expensive overhead of opening/closing a new DB connection for every single request — connections are reused from a pre-established pool, which is one of the cheapest, highest-impact optimisations you can make before touching your architecture at all.
+
+## Pattern 2 — Vertical Scaling or Scale-up
+- Upgrading the initial tiny machine.
+- E.g., RAM by 2x and SSD by 3x, etc.
+- Scale-up is **pocket-friendly only till a point**.
+- The more you scale up, **cost increases exponentially**.
+- **Good optimisation** as of now.
+- **Result:** Business grows further — scaled to 3 more cities, now getting **300 bookings per minute**.
+
+## Pattern 3 — Command Query Responsibility Segregation (CQRS)
+- The scaled-up big machine is **not able to handle** all read/write requests.
+- **Separate read/write operations** physical-machine-wise.
+- **2 more machines** added as **replicas** to the primary machine.
+- **All read queries → replicas.**
+- **All write queries → primary.**
+- **Result:** Business grows to 2 more cities.
+- **New problem:** Primary is **not able to handle all write requests**; **lag** between primary and replica is impacting user experience.
+
+> **Extra:** This is essentially the **Master-Slave** replication pattern (covered in detail in LEC-21) — CQRS as a broader architectural principle separates the "command" (write) responsibility from the "query" (read) responsibility, which naturally maps to routing writes to a primary and reads to replicas.
+
+## Pattern 4 — Multi Primary Replication
+- **Why not distribute write requests to replicas also?**
+- **All machines** can work as **primary & replica** simultaneously.
+- Multi-primary configuration is organised as a **logical circular ring**.
+- **Write data to any node.**
+- **Read data from any node** that replies to the broadcast first.
+- **Result:** Scaled to 5 more cities — but the system is **in pain again** (~50 req/s can't be handled well).
+
+## Pattern 5 — Partitioning of Data by Functionality
+- What about **separating the location tables** into a separate DB schema?
+- What about putting that DB in **separate machines** with primary-replica or multi-primary configuration?
+- **Different DBs can host data categorised by different functionality** (e.g., one DB/cluster for locations, another for bookings, another for payments).
+- **Backend/application layer** has to take responsibility to **join the results** (since data now lives in different DBs, joins can't happen at the DB level anymore).
+- **Result:** Planning to expand the business to other countries.
+
+> **Extra:** This is essentially applying **Vertical Partitioning at the database/service level**, similar in spirit to what modern **microservices architectures** do — each service/domain (Location, Booking, Payment) gets its own database, and the application layer stitches results together instead of relying on cross-domain SQL joins.
+
+## Pattern 6 — Horizontal Scaling or Scale-out
+- **Sharding** — multiple shards.
+- Allocate **50 machines** — all having the same DB schema — each machine just holds a **part of the data**.
+- **Locality of data** should be maintained (related data stored together on the same shard where possible).
+- Each machine can have its **own replicas**, which may be used in failure recovery.
+- **Sharding is generally hard to apply. But "No Pain, No Gain."**
+- **Result:** Scaling the business **across continents**.
+
+## Pattern 7 — Data Centre Wise Partition
+- Requests travelling **across continents** are experiencing **high latency**.
+- What about **distributing traffic across data centres**?
+- **Data centres across continents.**
+- Enable **cross data centre replication**, which helps with **disaster recovery**.
+- This always **maintains Availability** of the system.
+- **Result:** Now, plan for an **IPO** 🙂
+
+---
+
+## Summary Table — Progression of Scaling Patterns
+
+| Pattern | Technique | Solves | Introduces New Problem |
+|---|---|---|---|
+| 1 | Query Optimisation & Connection Pooling | Slow queries, connection overhead | Only delays the inevitable — still single DB |
+| 2 | Vertical Scaling (Scale-up) | Insufficient hardware capacity | Cost grows exponentially with scale |
+| 3 | CQRS (Read Replicas) | Single machine can't handle read+write together | Primary still bottlenecked on writes; replication lag |
+| 4 | Multi-Primary Replication | Distributes write load too | Conflict resolution complexity; still hits scaling ceiling |
+| 5 | Partitioning by Functionality | Different domains overload each other | App layer must now handle joins manually |
+| 6 | Horizontal Scaling / Sharding | Any single DB's storage/throughput limit | High complexity; re-sharding; poor for analytics |
+| 7 | Data Centre Wise Partition | Cross-continent latency | Requires robust cross-DC replication & consistency handling |
+
+> **Extra — Key takeaway for interviews:** This case study demonstrates the **general philosophy of database scaling**: always start with the *cheapest, simplest* optimisation (query tuning, connection pooling) before jumping to more complex, expensive, and operationally heavy solutions (vertical scaling → read replicas → multi-primary → functional partitioning → sharding → geo-distribution). Each step solves the immediate bottleneck but introduces new complexity, so scaling is an **incremental, problem-driven process**, not something you over-engineer for on day one.
+
+---
+
+## Interview Questions & Answers
+
+**Q1. Why did the Cab Booking App's database start performing poorly as the app became popular?**
+As requests scaled from ~1 booking per 5 minutes to 30 bookings per minute, a single small-machine database couldn't handle the increased load, resulting in high API latency, transaction deadlocks/starvation, and a sluggish overall experience — a classic symptom of a system outgrowing its initial architecture.
+
+**Q2. What was the first optimisation applied in this case study, and why was it chosen first?**
+Query Optimisation & Connection Pool Implementation — caching frequently accessed non-dynamic data and reusing DB connections via a connection pool. It was chosen first because it's the cheapest and least disruptive fix, requiring no architectural changes, and directly addresses inefficiencies (redundant queries, expensive connection setup/teardown) before resorting to more complex scaling techniques.
+
+**Q3. What is Vertical Scaling, and what is its main limitation?**
+Vertical Scaling (Scale-up) means upgrading the existing server's hardware — more RAM, faster/larger SSDs, etc. Its main limitation is that costs increase exponentially as you push hardware further, and there's ultimately a hard ceiling on how much a single machine can be upgraded — making it only a temporary, non-infinitely-scalable solution.
+
+**Q4. What problem does CQRS (read replicas) solve, and what new problem does it introduce?**
+CQRS solves the issue of a single machine being overwhelmed by handling both reads and writes simultaneously, by directing all read queries to replica machines and all write queries to the primary machine. It introduces a new problem: the primary machine can still become a write-bottleneck as write volume grows, and there's a lag between the primary and its replicas, which can cause replicas to serve slightly stale data.
+
+**Q5. What is Multi-Primary Replication, and why might reads become inconsistent in this setup?**
+Multi-Primary Replication allows every machine in a cluster to act as both a primary and a replica, arranged in a logical circular ring, so writes can go to any node. Reads can become inconsistent because you're reading from "any node that replies first" — if that node hasn't yet received the latest write (propagated from another node), you could get stale data, since there's no single authoritative source of truth at read time.
+
+**Q6. What does "Partitioning of Data by Functionality" mean, and what tradeoff does it introduce?**
+It means splitting the database by business functionality/domain — e.g., a separate database/schema for location data versus booking data versus payment data — potentially on entirely separate machines/clusters. The tradeoff is that since related data no longer lives in the same database, the application/backend layer must now manually combine ("join") data from multiple sources, since SQL joins across separate database instances aren't directly possible.
+
+**Q7. What is Sharding (Horizontal Scaling), and why is it described as "generally hard to apply"?**
+Sharding splits a single logical table's rows across many machines (e.g., 50 machines, each holding a portion of the data), all sharing the same schema. It's hard to apply because it requires careful shard-key design, a routing layer to direct queries to the right shard(s), maintaining "locality of data" so related records stay together where possible, and handling operational complexities like re-sharding and reduced efficiency for cross-shard analytical queries.
+
+**Q8. Why does Data Centre Wise Partitioning become necessary once a business scales across continents?**
+Because requests traveling across continents to reach a single, centrally-located data center incur significant network latency, degrading user experience. By distributing data centers across continents and routing traffic to the nearest one, latency is reduced, and with cross-data-center replication in place, the system also gains disaster recovery capability and higher overall availability.
+
+**Q9. What is the overall lesson/philosophy this case study teaches about database scaling?**
+Scaling should be approached incrementally and reactively to actual bottlenecks — starting with the cheapest, simplest fixes (query optimisation, connection pooling) and only progressing to more complex and costly architectural changes (vertical scaling → read replicas → multi-primary → functional partitioning → sharding → geo-distribution) as genuinely needed. Each pattern solves the current bottleneck but introduces new complexity/challenges, so there's no single "final" architecture — it's a continuous evolution driven by real growth.
+
+**Q10. How does Pattern 3 (CQRS) in this case study relate to the Master-Slave concept covered elsewhere in the course?**
+Pattern 3's approach of routing all writes to a primary machine and all reads to replica machines is essentially the Master-Slave Database concept (covered in LEC-21) — the "Master" (primary) handles writes to maintain the single source of truth, while "Slaves" (replicas) handle read traffic, reducing load on the master and improving overall system throughput and read latency.
+
+**Q11. What is the Scatter-Gather problem, and how does it relate to Pattern 6 (Sharding) in this case study?**
+The Scatter-Gather problem arises when a query needs data spread across multiple shards — the query must be "scattered" to all relevant shards and results "gathered" back together, which is expensive, especially for analytical/aggregate queries. This directly relates to Pattern 6's sharding setup: while it solves the storage/throughput scaling problem for typical transactional queries, any analytics done across the full dataset (e.g., "total bookings across all cities today") now needs to query all 50 shard machines and combine results, adding significant complexity and latency.
+
+**Q12. Why is "locality of data" important when designing a sharding strategy (Pattern 6)?**
+Because most application queries need to access related pieces of data together (e.g., a customer's bookings, or a driver's trip history) — if related data ends up scattered arbitrarily across different shards, even simple queries would require expensive cross-shard lookups. Maintaining data locality (keeping related records together on the same shard, often via a well-chosen shard key like customer_id or region) minimizes the need for costly cross-shard operations.
