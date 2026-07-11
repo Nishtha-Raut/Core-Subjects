@@ -1,0 +1,115 @@
+# LEC-20: CAP Theorem
+
+## 1. Introduction
+- Basic and one of the most important concepts in **Distributed Databases**.
+- Useful to know in order to design an **efficient distributed system** for your given business logic.
+
+## 2. Breaking Down CAP
+
+### a. Consistency
+- In a consistent system, **all nodes see the same data simultaneously**.
+- If we perform a read operation on a consistent system, it should return the value of the **most recent write** operation.
+- The read should cause all nodes to return the **same data**. All users see the same data at the same time, regardless of the node they connect to.
+- When data is written to a single node, it is then **replicated across the other nodes** in the system.
+
+### b. Availability
+- When availability is present in a distributed system, it means that the system **remains operational all of the time**.
+- **Every request will get a response**, regardless of the individual state of the nodes.
+- This means the system will operate even if there are **multiple nodes down**.
+- Unlike a consistent system, there's **no guarantee** that the response will be the most recent write operation.
+
+### c. Partition Tolerance
+- When a distributed system encounters a **partition**, it means there's a **break in communication between nodes**.
+- If a system is **partition-tolerant**, the system **does not fail**, regardless of whether messages are dropped or delayed between nodes within the system.
+- To have partition tolerance, the system must **replicate records across combinations of nodes and networks**.
+
+## 3. What Does the CAP Theorem Say?
+- The CAP theorem states that a distributed system can only provide **two of the three properties simultaneously**: **Consistency, Availability, and Partition Tolerance**.
+- The theorem formalises the **tradeoff between consistency and availability when there's a partition**.
+
+> **Extra — Why not all three?** In any real distributed system, network partitions are essentially **unavoidable** over time (cables fail, packets get lost, data centers lose connectivity). So practically, Partition Tolerance is a "must-have" rather than an optional trade-off — meaning the *real* choice most distributed systems face is actually between **Consistency vs Availability** *during* a partition event, not a free choice among all three.
+
+## 4. CAP Theorem & NoSQL Databases
+- NoSQL databases are great for distributed networks — they allow for **horizontal scaling** and can quickly scale across multiple nodes.
+- When deciding which NoSQL database to use, it's important to **keep the CAP theorem in mind**.
+
+### a. CA Databases
+- Enable **Consistency and Availability** across all nodes.
+- Unfortunately, CA databases **can't deliver fault tolerance**. In any distributed system, partitions are bound to happen, which means this type of database isn't a very practical choice.
+- That said, you can still find a CA database if you need one — some relational databases, such as **MySQL or PostgreSQL**, allow for consistency and availability. You can deploy them to nodes using replication (as long as no partition occurs).
+
+### b. CP Databases
+- Enable **Consistency and Partition Tolerance**, but **not Availability**.
+- When a partition occurs, the system has to **turn off inconsistent nodes** until the partition can be fixed.
+- **MongoDB** is an example of a CP database. It's a NoSQL DBMS that uses documents for data storage. It's considered **schema-less**.
+- Commonly used in **big data** and applications running in **different locations**.
+- The CP system is structured so that there's **only one primary node** that receives all of the write requests in a given replica set. **Secondary nodes** replicate the data from the primary node, so if the primary fails, a secondary node can stand-in.
+- In a **banking system**, Availability is not as important as Consistency, so we can opt for a CP DB like MongoDB.
+
+### c. AP Databases
+- Enable **Availability and Partition Tolerance**, but **not Consistency**.
+- In the event of a partition, **all nodes are available**, but they're **not all updated**.
+- E.g., if a user tries to access data from a "bad" node, they won't receive the most up-to-date version of the data.
+- When the partition is eventually resolved, most AP databases will **sync the nodes** to ensure consistency across them (**eventual consistency**).
+- **Apache Cassandra** is an example of an AP database. It's a NoSQL DB with **no primary node**, meaning all of the nodes remain available.
+- Cassandra allows for **eventual consistency** because users can re-sync their data right after a partition is resolved.
+- For apps like **Facebook**, we value availability more than consistency, so we'd opt for AP databases like **Cassandra or Amazon DynamoDB**.
+
+```
+                Consistency
+                    /\
+                   /  \
+                 CA    CP
+                 /   AP  \
+     Availability -------- Partition Tolerance
+```
+
+> **Extra — Quick summary table:**
+
+| Type | Guarantees | Sacrifices | Example DBs | Best suited for |
+|---|---|---|---|---|
+| **CA** | Consistency + Availability | Partition Tolerance | MySQL, PostgreSQL (single-node/non-partitioned deployments) | Systems that don't need to tolerate network partitions (rare in true distributed setups) |
+| **CP** | Consistency + Partition Tolerance | Availability (during partition) | MongoDB, HBase | Banking, financial systems — where stale/incorrect data is worse than temporary unavailability |
+| **AP** | Availability + Partition Tolerance | Consistency (temporarily; eventual consistency) | Cassandra, DynamoDB | Social media, high-traffic consumer apps — where being "always on" matters more than instant consistency |
+
+> **Extra — PACELC theorem (natural follow-up, sometimes asked in advanced interviews):** CAP only describes trade-offs *during a network partition*. The **PACELC theorem** extends this: "if there is a **P**artition, trade-off **A**vailability vs **C**onsistency; **E**lse (no partition), trade-off **L**atency vs **C**onsistency." This addresses a gap in CAP — even when there's *no* partition, distributed systems still have to trade off between low latency and strong consistency (e.g., waiting for all replicas to sync before responding vs. responding fast with possibly-stale data).
+
+---
+
+## Interview Questions & Answers
+
+**Q1. What is the CAP Theorem?**
+The CAP theorem states that in a distributed system, you can only simultaneously guarantee two out of three properties: Consistency (all nodes see the same, most recent data), Availability (every request gets a response, even if not the most recent data), and Partition Tolerance (the system continues to function despite communication breakdowns between nodes).
+
+**Q2. Explain Consistency, Availability, and Partition Tolerance in your own words.**
+Consistency means every read returns the most up-to-date write, regardless of which node handles the request. Availability means every request receives some response (success or failure of the operation, but the system itself responds), even if some nodes are down. Partition Tolerance means the system keeps functioning correctly even when network communication between nodes is disrupted or delayed.
+
+**Q3. Why is Partition Tolerance often considered "non-negotiable" in real distributed systems?**
+Because network partitions (dropped connections, delayed messages, hardware/network failures) are essentially inevitable in any real-world distributed system operating across multiple nodes or data centers. Since you can't fully prevent partitions from happening, a truly distributed system must be designed to tolerate them — making the practical choice mostly between Consistency and Availability specifically during a partition event.
+
+**Q4. What is a CP database? Give an example and a use case.**
+A CP database prioritizes Consistency and Partition Tolerance over Availability — during a network partition, it may take some nodes offline (become unavailable) rather than risk serving stale/inconsistent data. MongoDB is an example; it's well-suited for use cases like banking systems, where returning incorrect/outdated data is far worse than temporary unavailability.
+
+**Q5. What is an AP database? Give an example and a use case.**
+An AP database prioritizes Availability and Partition Tolerance over strict Consistency — during a partition, all nodes remain available and responsive, but some might serve slightly stale data until the partition resolves and nodes re-sync (eventual consistency). Apache Cassandra is an example; it's well-suited for use cases like social media platforms (e.g., Facebook), where staying "always on" matters more than every user seeing perfectly up-to-date data instantly.
+
+**Q6. Why are CA databases considered impractical for real distributed systems?**
+CA databases guarantee Consistency and Availability but not Partition Tolerance — meaning they assume network partitions simply won't happen. Since partitions are essentially unavoidable in any genuinely distributed, multi-node system over time, a database that can't handle partitions gracefully isn't a realistic choice for large-scale distributed deployments; CA setups are really only viable for non-partitioned/single-node style deployments.
+
+**Q7. How does MongoDB implement its CP behavior internally?**
+MongoDB structures each replica set so that there is only ONE primary node that accepts all write requests at a given time; secondary nodes replicate data from the primary. If the primary becomes unreachable (e.g., during a network partition), the system elects a new primary from the secondaries rather than allowing multiple nodes to accept conflicting writes — sacrificing availability briefly (while election happens) to preserve consistency.
+
+**Q8. How does Cassandra achieve high availability with no primary node?**
+Cassandra uses a masterless (leaderless) architecture where every node can accept both read and write requests — there's no single primary node that could become a bottleneck or single point of failure. During a partition, all nodes remain available and can independently accept writes; once the partition resolves, Cassandra uses eventual consistency mechanisms to reconcile and synchronize any conflicting/stale data across nodes.
+
+**Q9. What does "eventual consistency" mean, and which CAP category typically relies on it?**
+Eventual consistency means that if no new updates are made, all replicas/nodes will eventually converge to the same, consistent value over time — but at any given moment (especially right after a write or during a partition), different nodes might temporarily return different (stale) data. AP databases (like Cassandra, DynamoDB) typically rely on eventual consistency, since they prioritize availability over strict/immediate consistency.
+
+**Q10. Why would a banking application choose a CP database over an AP database?**
+Because in banking, serving incorrect or stale data (e.g., showing an outdated account balance that allows an overdraft, or double-processing a transaction) can have serious real-world financial and legal consequences. A CP database ensures that if consistency can't be guaranteed during a partition (e.g., due to nodes being out of sync), the system will restrict availability on the affected nodes rather than risk serving incorrect data — prioritizing correctness over uptime.
+
+**Q11. Why would a social media application like Facebook choose an AP database over a CP database?**
+Because for a social media platform, occasionally showing a slightly outdated like-count, comment, or post (a minor consistency issue) is a far more acceptable trade-off than the app becoming unavailable/unresponsive to users. AP databases ensure the app stays "always on" and responsive, even during network issues, accepting that some data might briefly be stale until it eventually syncs.
+
+**Q12. What is the PACELC theorem, and how does it extend CAP?**
+PACELC extends CAP by addressing what happens even when there's NO partition: "if there is a Partition, trade off Availability vs Consistency; Else, trade off Latency vs Consistency." This fills a gap in CAP theorem's scope — CAP only discusses trade-offs during a partition event, but PACELC recognizes that distributed systems always face a trade-off between response speed (Latency) and data Consistency, even during normal (non-partitioned) operation.
