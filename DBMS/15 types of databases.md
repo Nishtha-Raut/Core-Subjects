@@ -1,6 +1,7 @@
 # LEC-16: Types of Databases
 
 ## 1. Relational Databases
+- An RDBMS stores data in tables with rows and columns and maintains relationships using keys
 - Based on the **Relational Model**.
 - Relational databases are quite **popular**, even though the system was designed in the **1970s**. Also known as **Relational Database Management Systems (RDBMS)**.
 - Commonly use **SQL** for operations such as creating, reading, updating, and deleting data.
