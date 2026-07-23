@@ -61,20 +61,51 @@
 - Examples: **ER model**, **Relational Model**, **Object-oriented model**, **Object-relational data model**, etc.
 
 ## 4. Database Languages
+- **Database Language** — a specialized programming language used to read, define, update, and secure data within a Database Management System (DBMS).
 - **Data Definition Language (DDL)** — used to specify the database schema.
-- **Data Manipulation Language (DML)** — used to express database queries and updates.
-- Practically, both language features are present in a single DB language, e.g., **SQL**.
+- **Data Manipulation Language (DML)** — used to express database updates, additions, and removals.
+- **Data Query Language (DQL)** — used to specify a statement requesting the retrieval of information.
+- **Data Control Language (DCL)** — used to manage security, user roles, and system privileges.
+- **Transaction Control Language (TCL)** — used to manage and control logical units of database work.
+- Practically, all these language features are present in a single DB language, e.g., **SQL**.
 
 ### DDL
+- **Definition**: A language used to build, alter, and define the structural skeleton (schema) of database objects.
 - We specify **consistency constraints**, which must be checked every time the DB is updated.
+- Core commands involve:
+  1. `CREATE` — generates a brand new database object like a table or index.
+  2. `ALTER` — modifies structural attributes of an existing table or schema.
+  3. `DROP` — deletes a table, database, or view entirely from storage.
+  4. `TRUNCATE` — wipes out all data rows but leaves the table structure intact.
 
 ### DML
+- **Definition**: A language used to access, modify, and manage the actual data records stored inside existing database tables.
 - Data manipulation involves:
-  1. **Retrieval** of information stored in the DB.
-  2. **Insertion** of new information into the DB.
-  3. **Deletion** of information from the DB.
-  4. **Updating** existing information stored in the DB.
-- **Query language** — a part of DML used to specify a statement requesting the retrieval of information.
+  1. **Insertion** of new information into the DB using the `INSERT` command.
+  2. **Deletion** of information from the DB using the `DELETE` command.
+  3. **Updating** existing information stored in the DB using the `UPDATE` command.
+
+### DQL
+- **Definition**: A dedicated component of the database language focused exclusively on reading and fetching data from tables.
+- **Query language** — a part of the language used to specify a statement requesting the retrieval of information.
+- Core commands involve:
+  1. `SELECT` — retrieves and filters targeted rows or columns from tables.
+
+### DCL
+- **Definition**: A language used by administrators to control data access security, user identities, and operational permissions.
+- We specify **authorization and access controls** to protect data resources.
+- Core commands involve:
+  1. `GRANT` — gives specific users permission to execute operations like reading or writing.
+  2. `REVOKE` — pulls back previously assigned user access permissions instantly.
+
+### TCL
+- **Definition**: A language used to track, run, and isolate changes made by DML statements to maintain data accuracy during workflows.
+- We ensure **state preservation** by grouping operations into safe transactional blocks.
+- Core commands involve:
+  1. `COMMIT` — saves all active transactional modifications permanently to physical storage.
+  2. `ROLLBACK` — restores the database to its previous stable state if an error occurs.
+  3. `SAVEPOINT` — sets temporary checkpoints within a long transaction for partial rollbacks.
+
 
 ## 5. How is a Database Accessed from Application Programs?
 - Applications (written in host languages like C/C++, Java) interact with the DB.
